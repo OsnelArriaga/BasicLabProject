@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1074677286601",
+    "project_id": "basiclab-b82d8",
+    "storage_bucket": "basiclab-b82d8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074677286601:android:a78bee5e2ddd0271432f18",
+        "android_client_info": {
+          "package_name": "com.example.basiclabproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjGPowDQ7mG1K90LD6pXETzLW5VkZqknE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
