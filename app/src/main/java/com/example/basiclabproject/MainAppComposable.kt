@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.basiclabproject.feature.auth.login.SignInScreen
+import com.example.basiclabproject.feature.auth.signup.SignUpScreen
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -27,10 +28,10 @@ fun MainApp(){
             composable("login"){
                 SignInScreen(navController)
             }
-//
-//            composable("signup"){
-//                SignUpScreen(navController)
-//            }
+
+            composable("signup"){
+                SignUpScreen(navController)
+            }
 
 //            composable("home"){
 //                HomeScreen(navController)
