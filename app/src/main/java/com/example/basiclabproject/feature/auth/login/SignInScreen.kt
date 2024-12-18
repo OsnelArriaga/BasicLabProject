@@ -27,6 +27,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -69,6 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -86,8 +89,10 @@ import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.basiclabproject.R
+import com.example.basiclabproject.ui.stylepresets.TextInputs.textFieldStandard
 import com.example.basiclabproject.ui.stylepresets.buttons.buttonSingInStyle
 import com.example.basiclabproject.ui.theme.Green60
+import org.w3c.dom.Text
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
@@ -228,43 +233,74 @@ fun SignInScreen(navController: NavController) {
         Image(
             painter = painterResource(R.drawable.logo),
             contentDescription = null,
-            modifier = Modifier
-                .padding(horizontal = 90.dp)
+            modifier = Modifier.padding(horizontal = 90.dp)
         )
 
         Text(
-            text = "CodeLab",
-            fontSize = 35.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            text = "CodeLab", fontSize = 35.sp, fontWeight = FontWeight.Bold, color = Color.White
         )
 
-        TextInput(InputType.Email, KeyboardActions = KeyboardActions(onNext = {
-            passwordFocusRequester.requestFocus()
-        }))
+        TextField(
+            value = email,
+            leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = null) },
+            onValueChange = {email = it},
+            label = { Text(text = "Email") },
+            placeholder = { Text(text = "TuEmail@gmail.com")},
+            modifier = Modifier.fillMaxWidth(),
+            colors = textFieldStandard(),
+            singleLine = true,
+            shape = RoundedCornerShape(25.dp)
+            )
 
-        TextInput(InputType.Password, KeyboardActions = KeyboardActions(onDone = {
-            focusManager.clearFocus()
-        }), focusRequester = passwordFocusRequester)
+        TextField(
+            value = password,
+            leadingIcon = { Icon(imageVector = Icons.Filled.Lock, contentDescription = null) },
+            onValueChange = {password = it},
+            label = { Text(text = "Contraseña") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation(),
+            colors = textFieldStandard(),
+            singleLine = true,
+            shape = RoundedCornerShape(25.dp)
+            )
 
-        Button(
-            onClick = { }, modifier = Modifier
-                .fillMaxWidth(),
-            colors = buttonSingInStyle()
-        ) {
+//        TextInput(InputType.Email , KeyboardActions = KeyboardActions(onNext = {
+//            passwordFocusRequester.requestFocus()
+//        }))
+//
+//        TextInput(InputType.Password, KeyboardActions = KeyboardActions(onDone = {
+//            focusManager.clearFocus()
+//        }), focusRequester = passwordFocusRequester)
 
-            Text(text = "Iniciar sesión", Modifier.padding(vertical = 8.dp))
+        //SigIn Button
+        if (uiState.value == SignInState.Loading){
+            CircularProgressIndicator(color = Green60)
+        }else{
+
+            Button(
+                onClick = { viewModel.signIn(email, password) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = buttonSingInStyle(),
+                enabled = email.isNotEmpty() && password.isNotEmpty() && uiState.value == SignInState.Nothing || uiState.value == SignInState.Error
+            ) {
+
+                Text(text = "Iniciar sesión", Modifier.padding(vertical = 8.dp))
+            }
         }
 
+        //ResetPassword Button
         TextButton(onClick = { }) {
-            Text(text = "¿Olviaste tu contraseña?", color = Color.White, textDecoration = TextDecoration.Underline)
+            Text(
+                text = "¿Olviaste tu contraseña?",
+                color = Color.White,
+                textDecoration = TextDecoration.Underline
+            )
         }
 
-
+        //Register Button
         OutlinedButton(
             onClick = { navController.navigate("signup") },
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             border = BorderStroke(3.dp, Green60),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.Transparent,
@@ -298,17 +334,6 @@ fun TextInput(
             .focusOrder(focusRequester = focusRequester ?: FocusRequester()),
         leadingIcon = { Icon(inputType.icon, contentDescription = null) },
         label = { Text(text = inputType.label) },
-        shape = RoundedCornerShape(25.dp),
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = Color.Black,
-            unfocusedContainerColor = Color.White,
-            disabledIndicatorColor = Color.Gray,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            focusedContainerColor = Color.White,
-            focusedPlaceholderColor = Color.Gray,
-            focusedLabelColor = Color.Black,
-        ),
         singleLine = true,
         keyboardOptions = inputType.keyboardOptions,
         visualTransformation = inputType.visualTransformation,
@@ -321,7 +346,7 @@ sealed class InputType(
     val label: String,
     val icon: ImageVector,
     val keyboardOptions: KeyboardOptions,
-    val visualTransformation: VisualTransformation
+    val visualTransformation: VisualTransformation,
 ) {
 
     object Email : InputType(

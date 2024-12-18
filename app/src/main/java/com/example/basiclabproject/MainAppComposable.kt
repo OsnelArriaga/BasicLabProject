@@ -4,11 +4,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.basiclabproject.feature.home.HomeScreen
 import com.example.basiclabproject.feature.auth.login.SignInScreen
 import com.example.basiclabproject.feature.auth.signup.SignUpScreen
+import com.example.basiclabproject.feature.courseScreen.CourseScreen
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -33,18 +37,20 @@ fun MainApp(){
                 SignUpScreen(navController)
             }
 
-//            composable("home"){
-//                HomeScreen(navController)
-//            }
+            composable("home"){
+                HomeScreen(navController)
+            }
 
-//            composable("chat/{channelId}", arguments = listOf(
-//                navArgument("channelId"){
-//                    type = NavType.StringType
-//                }
-//            )){
-//                val channelId = it.arguments?.getString("channelId") ?: ""
-//                ChatScreen(navController, channelId)
-//            }
+
+            //Navegacion dinamica para los cursos de AspectosBasicos
+            composable("chat/{aspectosBasicosId}", arguments = listOf(
+                navArgument("aspectosBasicosId"){
+                    type = NavType.StringType
+                }
+            )){
+                val courseScreenId = it.arguments?.getString("aspectosBasicosId") ?: ""
+                CourseScreen(navController, courseScreenId)
+            }
 
         }
     }
