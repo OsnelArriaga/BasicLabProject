@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.basiclabproject.models.CardInfo
+import com.example.basiclabproject.navigation.Screens
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
@@ -21,8 +22,8 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     private val db = Firebase.firestore
 
 
-    private val _users = mutableStateListOf<CardInfo>()
-    val users: List<CardInfo> get() = _users
+    private val _cardInfo = mutableStateListOf<CardInfo>()
+    val cardInfo: List<CardInfo> get() = _cardInfo
 
     private val _isLoading = mutableStateOf(true)
     val isLoading: Boolean get() = _isLoading.value
@@ -34,11 +35,13 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     private fun getCardInfo() {
         viewModelScope.launch {
             try {
-                val result = db.collection("aspectosBasicos").get().await()
+                val result = db.collection("aspectosBasicos")
+                    .get()
+                    .await()
                 val userList = result.map { document ->
                     document.toObject(CardInfo::class.java).copy(id = document.id)
                 }
-                _users.addAll(userList)
+                _cardInfo.addAll(userList)
             } catch (e: Exception) {
                 // Handle the error
             } finally {
@@ -50,7 +53,7 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     fun logoutUser(navController: NavController) {
         Firebase.auth.signOut()
         // Limpiar datos de sesión locales
-        navController.navigate("login")
+        navController.navigate(Screens.LoginScreen.route)
     }
 
 }

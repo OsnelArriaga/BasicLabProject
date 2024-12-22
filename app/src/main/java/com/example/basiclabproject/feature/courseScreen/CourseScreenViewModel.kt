@@ -11,6 +11,8 @@ import com.example.basiclabproject.models.CoursesInfo
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -28,19 +30,18 @@ class CourseScreenViewModel @Inject constructor() : ViewModel() {
 
     init {
         getCoursesInfo()
-        loadDocuments()
     }
 
     private fun getCoursesInfo() {
         viewModelScope.launch {
             try {
                 val result = db.collection("aspectosBasicos")
-
                     .get()
                     .await()
                 val coursesInfoList = result.map { document ->
 
                     document.toObject(CoursesInfo::class.java).copy(id = document.id)
+
                 }
                 _coursesInfo.addAll(coursesInfoList)
             } catch (e: Exception) {
@@ -51,29 +52,64 @@ class CourseScreenViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-//    Quiero que al darle click a un elemento de una lista de documentos de mi coleccion en firebase, me despliegue una vista con el contenido en especifico del documento seleccionado y si retrocedo y selecciono otro documento, el contenido de esa vista cambiara al contenido del otro documento seleciconado usando Kotlin y jetpackcompose con viewmodels
+    private var _iDificultad = mutableStateListOf<CoursesInfo>()
 
-    private val documentsCollection = db.collection("your_collection_name") // Reemplaza con el nombre de tu colección
+    var iDificultad: List<CoursesInfo> = _iDificultad
 
-    val documents = mutableStateListOf<CoursesInfo>()
-    var selectedDocument by mutableStateOf<CoursesInfo?>(null)
+    var iTopicos = mutableStateOf("")
+        private set
+    var iDescripcion = mutableStateOf("")
+        private set
+    var iLecciones = mutableStateOf("")
+        private set
 
-    private fun loadDocuments() {
+//    fun fetchItemById(documentId: String) {
+//
+//        viewModelScope.launch {
+//            try {
+//                val documentSnapshot = db.collection("aspectosBasicos")
+//                    .document(documentId)
+//                    .get()
+//                    .await()
+//                val item = documentSnapshot.toObject(CoursesInfo::class.java)
+//                if (item != null) {
+//                    _iDificultad.add(
+//                        CoursesInfo(
+//                            item.dificultad,
+//                            item.descripcion,
+//                            item.lecciones)
+//                    )
+//                }
+//
+//            } catch (e: Exception) {
+//                // Manejar el error
+//            } finally {
+//            }
+//        }
+//    }
+
+    private val _cInfo = mutableStateListOf<CoursesInfo>()
+    val cInfo: List<CoursesInfo> get() = _cInfo
+
+    var xxx = mutableStateOf(CoursesInfo())
+
+    fun fetchCourses(documentId: String) {
         viewModelScope.launch {
-            val querySnapshot = documentsCollection.get().await()
-            querySnapshot.documents.forEach { document ->
-                val documentData = document.toObject(CoursesInfo::class.java)
-                documentData?.let {
-                    documents.add(it)
+            try {
+                val documentSnapshot = db.collection("aspectosBasicos")
+                    .document(documentId)
+                    .get()
+                    .await()
+                val item = documentSnapshot.toObject(CoursesInfo::class.java)
+                if (item != null) {
+                    xxx.value = item
                 }
+            } catch (e: Exception) {
+                // Manejar el error
+            } finally {
+
             }
+
         }
     }
-
-    fun selectDocument(document: CoursesInfo) {
-        selectedDocument = document
-    }
-
-
-
 }

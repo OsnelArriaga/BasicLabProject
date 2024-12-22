@@ -1,11 +1,18 @@
 package com.example.basiclabproject.navigation
 
+const val DETAIL_ARGUMENT_KEY = "id"
+//const val DETAIL_ARGUMENT_KEY2 = "dificultad"
+
 sealed class Screens(val route: String) {
 
-    object  LoginScreen : Screens("signIn_screen")
-    object  SignUpScreen : Screens("signUp_screen")
-    object  HomeScreen : Screens("home_screen")
-    object  CourseScreen : Screens("course_screen/{id}")
+    object  LoginScreen : Screens("login")
+    object  SignUpScreen : Screens("signUp")
+    object  HomeScreen : Screens("home")
+    object  CourseScreen : Screens("courseScreen/{$DETAIL_ARGUMENT_KEY}"){
+        fun passId(id: String): String {
+            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = id.toString())
+        }
+    }
 
 
 }

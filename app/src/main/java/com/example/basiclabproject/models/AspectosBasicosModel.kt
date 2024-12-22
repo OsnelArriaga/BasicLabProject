@@ -12,6 +12,6 @@ data class CoursesInfo(
     val dificultad: String = "",
     val descripcion: String = "",
     val contenido: String = "",
-    val topicos: String = "",
+    val topicos: List<String> = emptyList(),
     val lecciones: String = ""
 )

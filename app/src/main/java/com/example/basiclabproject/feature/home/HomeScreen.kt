@@ -42,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.basiclabproject.models.CardInfo
+import com.example.basiclabproject.navigation.Screens
 import com.example.basiclabproject.ui.theme.DarkGreen
 import com.example.basiclabproject.ui.theme.Green60
 import com.google.firebase.auth.FirebaseAuth
@@ -157,12 +158,12 @@ fun HomeScreen(navController: NavController) {
 @Composable
 fun UserListScreen(viewModel: HomeViewModel = viewModel(), navController: NavController) {
 
-    val users by viewModel::users
+    val cardInfo by viewModel::cardInfo
     val isLoading by viewModel::isLoading
 
-    var pager = rememberPagerState(
+    val pager = rememberPagerState(
         initialPage = 0,
-        pageCount = { users.size },
+        pageCount = { cardInfo.size },
         initialPageOffsetFraction = 0f
     )
 
@@ -197,8 +198,11 @@ fun UserListScreen(viewModel: HomeViewModel = viewModel(), navController: NavCon
                 state = pager,
             ) { page ->
 
-                ChannelItem(users[page]) {
-                    navController.navigate("chat/${users[page].id}")
+                ChannelItem(
+                    cardInfo[page]) {
+//                    navController.navigate("chat/${users[page].id}")
+                    navController.navigate(
+                        Screens.CourseScreen.passId(cardInfo[page].id))
                 }
 
             }

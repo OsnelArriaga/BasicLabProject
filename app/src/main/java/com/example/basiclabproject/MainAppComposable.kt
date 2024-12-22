@@ -43,14 +43,14 @@ fun MainApp(){
 
 
             //Navegacion dinamica para los cursos de AspectosBasicos
-            composable("chat/{aspectosBasicosId}", arguments = listOf(
-                navArgument("aspectosBasicosId"){
-                    type = NavType.StringType
-                }
-            )){
-                val courseScreenId = it.arguments?.getString("aspectosBasicosId") ?: ""
-                CourseScreen(navController, courseScreenId)
-            }
+//            composable("chat/{aspectosBasicosId}", arguments = listOf(
+//                navArgument("aspectosBasicosId"){
+//                    type = NavType.StringType
+//                }
+//            )){
+//                val courseScreenId = it.arguments?.getString("aspectosBasicosId") ?: ""
+//                CourseScreen(navController, 12, "Intermedio")
+//            }
 
         }
     }
