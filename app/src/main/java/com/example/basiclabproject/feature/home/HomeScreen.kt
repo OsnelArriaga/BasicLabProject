@@ -283,17 +283,17 @@ fun LogoutButton(onLogoutClick: () -> Unit) {
     }
 }
 
-@Composable
-fun UserItem(curso: CardInfo) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = curso.titulo, style = MaterialTheme.typography.titleLarge)
-            Text(text = curso.dificultad, style = MaterialTheme.typography.titleLarge)
-        }
-    }
-}
+//@Composable
+//fun UserItem(curso: CardInfo) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 8.dp)
+//    ) {
+//        Column(modifier = Modifier.padding(16.dp)) {
+//            Text(text = curso.titulo, style = MaterialTheme.typography.titleLarge)
+//            Text(text = curso.dificultad, style = MaterialTheme.typography.titleLarge)
+//        }
+//    }
+//}
 

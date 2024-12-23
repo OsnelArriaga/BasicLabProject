@@ -1,5 +1,7 @@
 package com.example.basiclabproject.feature.courseScreen
 
+import android.util.Log
+import androidx.compose.material3.Card
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -7,7 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.basiclabproject.models.CardInfo
-import com.example.basiclabproject.models.CoursesInfo
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,49 +23,39 @@ class CourseScreenViewModel @Inject constructor() : ViewModel() {
 
     private val db = Firebase.firestore
 
-    private val _coursesInfo = mutableStateListOf<CoursesInfo>()
-    val coursesInfo: List<CoursesInfo> get() = _coursesInfo
+    var iCourseData = mutableStateOf(CardInfo())
+        private set
 
-    private val _isLoading = mutableStateOf(true)
-    val isLoading: Boolean get() = _isLoading.value
-
-    init {
-        getCoursesInfo()
-    }
-
-    private fun getCoursesInfo() {
+    fun fetchItemById(cursoId: String) {
         viewModelScope.launch {
             try {
-                val result = db.collection("aspectosBasicos")
+                val documentSnapshot = db.collection("aspectosBasicos")
+                    .document(cursoId)
                     .get()
                     .await()
-                val coursesInfoList = result.map { document ->
+                val item = documentSnapshot.toObject(CardInfo::class.java)
 
-                    document.toObject(CoursesInfo::class.java).copy(id = document.id)
-
+                if (item != null) {
+                    iCourseData.value = item
                 }
-                _coursesInfo.addAll(coursesInfoList)
+
+                Log.d("iDescripcion:", iCourseData.value.toString())
+
+
             } catch (e: Exception) {
-                // Handle the error
+                // Manejar el error
             } finally {
-                _isLoading.value = false
             }
         }
     }
+}
 
-    private var _iDificultad = mutableStateListOf<CoursesInfo>()
-
-    var iDificultad: List<CoursesInfo> = _iDificultad
-
-    var iTopicos = mutableStateOf("")
-        private set
-    var iDescripcion = mutableStateOf("")
-        private set
-    var iLecciones = mutableStateOf("")
-        private set
-
-//    fun fetchItemById(documentId: String) {
+//    private val _cInfo = mutableStateListOf<CoursesInfo>()
+//    val cInfo: List<CoursesInfo> get() = _cInfo
 //
+//    var xxx = mutableStateOf(CoursesInfo())
+//
+//    fun fetchCourses(documentId: String) {
 //        viewModelScope.launch {
 //            try {
 //                val documentSnapshot = db.collection("aspectosBasicos")
@@ -73,43 +64,13 @@ class CourseScreenViewModel @Inject constructor() : ViewModel() {
 //                    .await()
 //                val item = documentSnapshot.toObject(CoursesInfo::class.java)
 //                if (item != null) {
-//                    _iDificultad.add(
-//                        CoursesInfo(
-//                            item.dificultad,
-//                            item.descripcion,
-//                            item.lecciones)
-//                    )
+//                    xxx.value = item
 //                }
-//
 //            } catch (e: Exception) {
 //                // Manejar el error
 //            } finally {
+//
 //            }
+//
 //        }
 //    }
-
-    private val _cInfo = mutableStateListOf<CoursesInfo>()
-    val cInfo: List<CoursesInfo> get() = _cInfo
-
-    var xxx = mutableStateOf(CoursesInfo())
-
-    fun fetchCourses(documentId: String) {
-        viewModelScope.launch {
-            try {
-                val documentSnapshot = db.collection("aspectosBasicos")
-                    .document(documentId)
-                    .get()
-                    .await()
-                val item = documentSnapshot.toObject(CoursesInfo::class.java)
-                if (item != null) {
-                    xxx.value = item
-                }
-            } catch (e: Exception) {
-                // Manejar el error
-            } finally {
-
-            }
-
-        }
-    }
-}

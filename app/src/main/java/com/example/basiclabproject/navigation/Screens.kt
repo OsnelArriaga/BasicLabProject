@@ -10,7 +10,7 @@ sealed class Screens(val route: String) {
     object  HomeScreen : Screens("home")
     object  CourseScreen : Screens("courseScreen/{$DETAIL_ARGUMENT_KEY}"){
         fun passId(id: String): String {
-            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = id.toString())
+            return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = id)
         }
     }
 

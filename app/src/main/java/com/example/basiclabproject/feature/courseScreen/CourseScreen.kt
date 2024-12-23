@@ -19,21 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.basiclabproject.models.CoursesInfo
 
 @Composable
 fun CourseScreen(
     navController: NavController,
-    cursoId: String,
-    viewModel: CourseScreenViewModel = hiltViewModel()
+    cursoId: String
 ) {
-//    val viewModel = hiltViewModel<CourseScreenViewModel>()
+    val viewModel = hiltViewModel<CourseScreenViewModel>()
 
-//    val itemName by viewModel::coursesInfo
-    val coursesInfo by viewModel::xxx
+//  val itemName by viewModel::coursesInfo
+    val coursesInfo by viewModel::iCourseData
 
-    LaunchedEffect(cursoId) {
-        viewModel.fetchCourses(cursoId)
+    LaunchedEffect(cursoId){
+        viewModel.fetchItemById(cursoId)
     }
 
     Text(
@@ -44,9 +42,8 @@ fun CourseScreen(
 //    LazyColumn(modifier = Modifier
 //        .fillMaxSize()
 //        .padding(16.dp)) {
-//        items(coursesInfo) { course ->
+//        items(coursesInfoList) { course ->
 //            CourseItem(course)
-////            Text(text = item.dificultad)
 //        }
 //    }
 
@@ -55,26 +52,26 @@ fun CourseScreen(
 
 }
 
-@Composable
-fun CourseItem(course: CoursesInfo) {
-    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Dificultad: ${course.dificultad}",
-                style = MaterialTheme.typography.titleLarge
-            )
-            Text(
-                text = "Descripción: ${course.descripcion}",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                text = "Lecciones: ${course.lecciones}",
-                style = MaterialTheme.typography.bodyLarge
-            )
+//@Composable
+//fun CourseItem(course: CoursesInfo) {
+//    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+//        Column(modifier = Modifier.padding(16.dp)) {
 //            Text(
-//                text = "Tópicos: ${course.topicos.joinToString(", ")}",
+//                text = "Dificultad: ${course.dificultad}",
+//                style = MaterialTheme.typography.titleLarge
+//            )
+//            Text(
+//                text = "Descripción: ${course.descripcion}",
 //                style = MaterialTheme.typography.bodyLarge
 //            )
-        }
-    }
-}
+//            Text(
+//                text = "Lecciones: ${course.lecciones}",
+//                style = MaterialTheme.typography.bodyLarge
+//            )
+////            Text(
+////                text = "Tópicos: ${course.topicos.joinToString(", ")}",
+////                style = MaterialTheme.typography.bodyLarge
+////            )
+//        }
+//    }
+//}
