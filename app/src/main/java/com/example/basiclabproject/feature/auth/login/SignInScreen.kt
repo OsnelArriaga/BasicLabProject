@@ -7,6 +7,7 @@ import android.provider.CalendarContract.Colors
 import android.widget.Button
 import android.widget.Filter
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,6 +49,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -89,6 +91,7 @@ import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.basiclabproject.R
+import com.example.basiclabproject.feature.auth.signup.VideoPlayer
 import com.example.basiclabproject.ui.stylepresets.TextInputs.textFieldStandard
 import com.example.basiclabproject.ui.stylepresets.buttons.buttonSingInStyle
 import com.example.basiclabproject.ui.theme.Green60
@@ -202,66 +205,56 @@ fun SignInScreen(navController: NavController) {
 //            modifier = Modifier.matchParentSize()
 //        )
 
-        val exoPlayer = remember(context) {
-            ExoPlayer.Builder(context).build().apply {
-                setMediaItem(MediaItem.fromUri(uri))
-                prepare()
-                playWhenReady = true
-                repeatMode = Player.REPEAT_MODE_ALL
-            }
-        }
-        AndroidView(factory = { context ->
-            PlayerView(context).apply {
-                player = exoPlayer
-                useController = false
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
-                z = 1f
-            }
-        })
-    }
+        VideoPlayer(uri)
 
-    Column(
-        Modifier
-            .navigationBarsPadding()
-            .padding(horizontal = 42.dp, vertical = 32.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally
+        Column(
+            Modifier
+                .navigationBarsPadding()
+                .padding(horizontal = 42.dp, vertical = 32.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(
+                16.dp,
+                alignment = Alignment.CenterVertically
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally
 
-    ) {
+        ) {
 
-        Image(
-            painter = painterResource(R.drawable.logo),
-            contentDescription = null,
-            modifier = Modifier.padding(horizontal = 90.dp)
-        )
-
-        Text(
-            text = "CodeLab", fontSize = 35.sp, fontWeight = FontWeight.Bold, color = Color.White
-        )
-
-        TextField(
-            value = email,
-            leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = null) },
-            onValueChange = {email = it},
-            label = { Text(text = "Email") },
-            placeholder = { Text(text = "TuEmail@gmail.com")},
-            modifier = Modifier.fillMaxWidth(),
-            colors = textFieldStandard(),
-            singleLine = true,
-            shape = RoundedCornerShape(25.dp)
+            Image(
+                painter = painterResource(R.drawable.logo),
+                contentDescription = null,
+                modifier = Modifier.padding(horizontal = 90.dp)
             )
 
-        TextField(
-            value = password,
-            leadingIcon = { Icon(imageVector = Icons.Filled.Lock, contentDescription = null) },
-            onValueChange = {password = it},
-            label = { Text(text = "Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            colors = textFieldStandard(),
-            singleLine = true,
-            shape = RoundedCornerShape(25.dp)
+            Text(
+                text = "CodeLab",
+                fontSize = 35.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            TextField(
+                value = email,
+                leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = null) },
+                onValueChange = { email = it },
+                label = { Text(text = "Email") },
+                placeholder = { Text(text = "tuemail@gmail.com") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = textFieldStandard(),
+                singleLine = true,
+                shape = RoundedCornerShape(25.dp)
+            )
+
+            TextField(
+                value = password,
+                leadingIcon = { Icon(imageVector = Icons.Filled.Lock, contentDescription = null) },
+                onValueChange = { password = it },
+                label = { Text(text = "Contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                colors = textFieldStandard(),
+                singleLine = true,
+                shape = RoundedCornerShape(25.dp)
             )
 
 //        TextInput(InputType.Email , KeyboardActions = KeyboardActions(onNext = {
@@ -272,75 +265,87 @@ fun SignInScreen(navController: NavController) {
 //            focusManager.clearFocus()
 //        }), focusRequester = passwordFocusRequester)
 
-        //SigIn Button
-        if (uiState.value == SignInState.Loading){
-            CircularProgressIndicator(color = Green60)
-        }else{
+            //SigIn Button
+            if (uiState.value == SignInState.Loading) {
+                CircularProgressIndicator(color = Green60)
+            } else {
 
-            Button(
-                onClick = { viewModel.signIn(email, password) },
+                Button(
+                    onClick = { viewModel.signIn(email, password) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = buttonSingInStyle(),
+                    enabled = email.isNotEmpty() && password.isNotEmpty() && uiState.value == SignInState.Nothing || uiState.value == SignInState.Error
+                ) {
+
+                    Text(text = "Iniciar sesión", Modifier.padding(vertical = 8.dp))
+                }
+            }
+
+            //ResetPassword Button
+            TextButton(onClick = { }) {
+                Text(
+                    text = "¿Olviaste tu contraseña?",
+                    color = Color.White,
+                    textDecoration = TextDecoration.Underline
+                )
+            }
+
+            //Register Button
+            OutlinedButton(
+                onClick = { navController.navigate("signup") },
                 modifier = Modifier.fillMaxWidth(),
-                colors = buttonSingInStyle(),
-                enabled = email.isNotEmpty() && password.isNotEmpty() && uiState.value == SignInState.Nothing || uiState.value == SignInState.Error
+                border = BorderStroke(3.dp, Green60),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.Transparent,
+                    disabledContentColor = Color.Red
+                )
             ) {
 
-                Text(text = "Iniciar sesión", Modifier.padding(vertical = 8.dp))
+                Text(text = "Registrarse", Modifier.padding(vertical = 8.dp))
             }
+
+            Text(text = "¿No tienes una cuenta?", color = Color.White)
+
         }
-
-        //ResetPassword Button
-        TextButton(onClick = { }) {
-            Text(
-                text = "¿Olviaste tu contraseña?",
-                color = Color.White,
-                textDecoration = TextDecoration.Underline
-            )
-        }
-
-        //Register Button
-        OutlinedButton(
-            onClick = { navController.navigate("signup") },
-            modifier = Modifier.fillMaxWidth(),
-            border = BorderStroke(3.dp, Green60),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.Transparent,
-                contentColor = Color.White,
-                disabledContainerColor = Color.Transparent,
-                disabledContentColor = Color.Red
-            )
-        ) {
-
-            Text(text = "Registrarse", Modifier.padding(vertical = 8.dp))
-        }
-
-        Text(text = "¿No tienes una cuenta?", color = Color.White)
-
     }
 }
 
-//inputs
+//Reproductor de video
+@OptIn(UnstableApi::class)
 @Composable
-fun TextInput(
-    inputType: InputType, focusRequester: FocusRequester? = null, KeyboardActions: KeyboardActions
-) {
+fun VideoPlayer(uri: Uri) {
 
-    var value: String by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
-    TextField(
-        value = value,
-        onValueChange = { value = it },
-        Modifier
-            .fillMaxWidth()
-            .focusOrder(focusRequester = focusRequester ?: FocusRequester()),
-        leadingIcon = { Icon(inputType.icon, contentDescription = null) },
-        label = { Text(text = inputType.label) },
-        singleLine = true,
-        keyboardOptions = inputType.keyboardOptions,
-        visualTransformation = inputType.visualTransformation,
-        keyboardActions = KeyboardActions
-    )
+    // Crear el ExoPlayer solo una vez
+    val exoPlayer = remember(uri) {
+        ExoPlayer.Builder(context).build().apply{
+            setMediaItem(MediaItem.fromUri(uri))
+            prepare()
+            playWhenReady = true
+            repeatMode = Player.REPEAT_MODE_ALL
+        }
+    }
 
+    // Liberar el ExoPlayer cuando la composición se elimine
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    // Mostrar el reproductor de video
+    AndroidView(factory = { context ->
+        PlayerView(context).apply {
+            player = exoPlayer
+            useController = false
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
+        }
+    })
 }
+
 
 sealed class InputType(
     val label: String,

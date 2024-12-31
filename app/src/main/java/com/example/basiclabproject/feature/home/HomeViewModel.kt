@@ -1,5 +1,7 @@
 package com.example.basiclabproject.feature.home
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -9,6 +11,7 @@ import com.example.basiclabproject.models.CardInfo
 import com.example.basiclabproject.navigation.Screens
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -20,7 +23,6 @@ import kotlinx.coroutines.tasks.await
 class HomeViewModel @Inject constructor() : ViewModel() {
 
     private val db = Firebase.firestore
-
 
     private val _cardInfo = mutableStateListOf<CardInfo>()
     val cardInfo: List<CardInfo> get() = _cardInfo
@@ -55,6 +57,48 @@ class HomeViewModel @Inject constructor() : ViewModel() {
         // Limpiar datos de sesión locales
         navController.navigate(Screens.LoginScreen.route)
     }
+
+    fun guardarCursoVisitado(cursoId: String) {
+
+        val db = FirebaseFirestore.getInstance()
+        val usuarioId = "usuario_actual_id" // Cambia esto por el ID del usuario actual
+
+        db.collection("usuarios").document(usuarioId)
+            .collection("cursosVisitados").document(cursoId)
+            .set(mapOf("id" to cursoId))
+            .addOnSuccessListener {
+                // Curso guardado exitosamente
+                Log.d("Firestore", "Curso guardado exitosamente: $cursoId")
+                // Aquí puedes actualizar la UI o mostrar un mensaje al usuario
+//                Toast.makeText(, "Curso guardado exitosamente", Toast.LENGTH_SHORT).show()
+
+            }
+            .addOnFailureListener { e ->
+                // Manejar el error
+                Log.w("Firestore", "Error al guardar el curso", e)
+            }
+    }
+
+    fun obtenerCursosVisitados(onResult: (List<CardInfo>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val usuarioId = "usuario_actual_id" // Cambia esto por el ID del usuario actual
+
+        db.collection("usuarios").document(usuarioId)
+            .collection("cursosVisitados")
+            .get()
+            .addOnSuccessListener { documents ->
+                val cursos = documents.map { doc ->
+                    CardInfo(doc.id, doc.getString("titulo") ?: "Sin título")
+                }
+//                onResult(CardInfo)
+            }
+            .addOnFailureListener { e ->
+                // Manejar el error
+                onResult(emptyList())
+            }
+    }
+
+
 
 }
 

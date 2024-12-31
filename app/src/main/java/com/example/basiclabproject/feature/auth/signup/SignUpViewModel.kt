@@ -25,7 +25,7 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
                             com.google.firebase.auth.UserProfileChangeRequest.Builder()
                                 .setDisplayName(name)
                                 .build()
-                        )?.addOnCompleteListener {
+                        ).addOnCompleteListener {
                             _state.value = SignUpState.Success
                         }
                         return@addOnCompleteListener

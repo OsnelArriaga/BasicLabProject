@@ -1,19 +1,16 @@
 package com.example.basiclabproject.feature.courseScreen
 
 import android.util.Log
-import androidx.compose.material3.Card
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.basiclabproject.models.CardInfo
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -23,54 +20,32 @@ class CourseScreenViewModel @Inject constructor() : ViewModel() {
 
     private val db = Firebase.firestore
 
-    var iCourseData = mutableStateOf(CardInfo())
-        private set
+    private val _courseContent = MutableLiveData<CardInfo?>()
+    val cContent: LiveData<CardInfo?> get() = _courseContent
 
-    fun fetchItemById(cursoId: String) {
-        viewModelScope.launch {
-            try {
-                val documentSnapshot = db.collection("aspectosBasicos")
-                    .document(cursoId)
-                    .get()
-                    .await()
-                val item = documentSnapshot.toObject(CardInfo::class.java)
-
-                if (item != null) {
-                    iCourseData.value = item
+    fun fetchData(documentId: String) {
+        try {
+            db.collection("aspectosBasicos")
+                .document(documentId)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document != null) {
+                        // Mapeo del documento de acuerdo al modelo
+                        val usuarioData = document.toObject<CardInfo>()
+                        _courseContent.value = usuarioData
+                    } else {
+                        // Manejar el caso en que el documento no existe
+                        TODO("Error con el documento")
+                    }
+                    Log.d("lLiveResponse:", _courseContent.value.toString())
                 }
-
-                Log.d("iDescripcion:", iCourseData.value.toString())
-
-
-            } catch (e: Exception) {
-                // Manejar el error
-            } finally {
-            }
+                .addOnFailureListener { exception ->
+                    // Manejar errores
+                    _courseContent.value = null
+                }
+        } catch (e: Exception) {
+            TODO("Error al momento de consultar la coleccion")
         }
     }
-}
 
-//    private val _cInfo = mutableStateListOf<CoursesInfo>()
-//    val cInfo: List<CoursesInfo> get() = _cInfo
-//
-//    var xxx = mutableStateOf(CoursesInfo())
-//
-//    fun fetchCourses(documentId: String) {
-//        viewModelScope.launch {
-//            try {
-//                val documentSnapshot = db.collection("aspectosBasicos")
-//                    .document(documentId)
-//                    .get()
-//                    .await()
-//                val item = documentSnapshot.toObject(CoursesInfo::class.java)
-//                if (item != null) {
-//                    xxx.value = item
-//                }
-//            } catch (e: Exception) {
-//                // Manejar el error
-//            } finally {
-//
-//            }
-//
-//        }
-//    }
+}

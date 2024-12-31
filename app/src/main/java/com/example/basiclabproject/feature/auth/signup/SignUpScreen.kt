@@ -1,7 +1,9 @@
 package com.example.basiclabproject.feature.auth.signup
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -122,22 +125,32 @@ fun SignUpScreen(navController: NavController) {
 
         var checked by remember { mutableStateOf(true) }
 
+    //Reproductor de video
+//        val exoPlayer = remember(context) {
+//            ExoPlayer.Builder(context).build().apply {
+//                setMediaItem(MediaItem.fromUri(uri))
+//                prepare()
+//                playWhenReady = true
+//                repeatMode = Player.REPEAT_MODE_ALL
+//            }
+//        }
+//
+//        // Liberar el ExoPlayer cuando la composición se elimine
+//        DisposableEffect(Unit) {
+//            onDispose {
+//                exoPlayer.release()
+//            }
+//        }
+//
+//        AndroidView(factory = { context ->
+//            PlayerView(context).apply {
+//                player = exoPlayer
+//                useController = false
+//                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
+//            }
+//        })
 
-        val exoPlayer = remember(context) {
-            ExoPlayer.Builder(context).build().apply {
-                setMediaItem(MediaItem.fromUri(uri))
-                prepare()
-                playWhenReady = true
-                repeatMode = Player.REPEAT_MODE_ALL
-            }
-        }
-        AndroidView(factory = { context ->
-            PlayerView(context).apply {
-                player = exoPlayer
-                useController = false
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
-            }
-        })
+        VideoPlayer(uri)
 
         Column(
             modifier = Modifier
@@ -262,39 +275,38 @@ fun SignUpScreen(navController: NavController) {
 
 }
 
-//inputs
+//Reproductor de video
+@OptIn(UnstableApi::class)
 @Composable
-fun TextInput(
-    inputType: InputType, focusRequester: FocusRequester? = null, KeyboardActions: KeyboardActions, name :String
-) {
+fun VideoPlayer(uri: Uri) {
 
-    var value: String by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
-    TextField(
-        value = name,
-        onValueChange = { value = it },
-        Modifier
-            .fillMaxWidth()
-            .focusOrder(focusRequester = focusRequester ?: FocusRequester()),
-        leadingIcon = { Icon(inputType.icon, contentDescription = null) },
-        label = { Text(text = inputType.label) },
-        shape = RoundedCornerShape(25.dp),
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = Color.Black,
-            unfocusedContainerColor = Color.White,
-            disabledIndicatorColor = Color.Gray,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            focusedContainerColor = Color.White,
-            focusedPlaceholderColor = Color.Gray,
-            focusedLabelColor = Color.Black,
-        ),
-        singleLine = true,
-        keyboardOptions = inputType.keyboardOptions,
-        visualTransformation = inputType.visualTransformation,
-        keyboardActions = KeyboardActions
-    )
+    // Crear el ExoPlayer solo una vez
+    val exoPlayer = remember(uri) {
+        ExoPlayer.Builder(context).build().apply{
+            setMediaItem(MediaItem.fromUri(uri))
+            prepare()
+            playWhenReady = true
+            repeatMode = Player.REPEAT_MODE_ALL
+        }
+    }
 
+    // Liberar el ExoPlayer cuando la composición se elimine
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    // Mostrar el reproductor de video
+    AndroidView(factory = { context ->
+        PlayerView(context).apply {
+            player = exoPlayer
+            useController = false
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
+        }
+    })
 }
 
 sealed class InputType(

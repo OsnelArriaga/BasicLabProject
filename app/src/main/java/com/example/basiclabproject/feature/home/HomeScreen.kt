@@ -29,6 +29,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,12 +60,23 @@ fun HomeScreen(navController: NavController) {
     //inicializando el viewModel
     val viewModel = hiltViewModel<HomeViewModel>()
 
+    var cursos by remember { mutableStateOf(listOf<CardInfo>()) }
+
+
+
     //inicializar la variable para almacenar el contenido a mostrar de la BD
 //    val channels = viewModel.channels.collectAsState()
     //Agregar canal
 //    val addChannel = remember {
 //        mutableStateOf(false)
 //    }
+
+    LaunchedEffect(Unit) {
+
+        viewModel.obtenerCursosVisitados { cursosVisitados ->
+            cursos = cursosVisitados
+        }
+    }
 
     val sheetState = rememberModalBottomSheetState()
 
