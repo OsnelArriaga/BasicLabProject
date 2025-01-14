@@ -1,7 +1,10 @@
 package com.example.basiclabproject.feature.auth.login
 
+import android.text.TextUtils
 import androidx.lifecycle.ViewModel
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +32,16 @@ class SignInViewModel @Inject constructor() : ViewModel(){
                 }
             }
     }
+
+    fun resetPassword(userMail: String) {
+        if (!TextUtils.isEmpty(userMail)) {
+            Firebase.auth.sendPasswordResetEmail(userMail)
+        }
+    }
+
 }
+
+
 
 sealed class SignInState{
 

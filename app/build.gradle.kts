@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.ui.text.google.fonts)
 
     testImplementation(libs.junit)
 
@@ -110,4 +111,9 @@ dependencies {
     //Dagger hilt
     implementation("com.google.dagger:hilt-android:2.44")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+    //Imagenes de la web
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+
+
 }

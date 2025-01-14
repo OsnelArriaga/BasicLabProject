@@ -1,53 +1,28 @@
 package com.example.basiclabproject.feature.auth.login
 
-import android.media.browse.MediaBrowser
 import android.net.Uri
-import android.os.Looper.prepare
-import android.provider.CalendarContract.Colors
-import android.widget.Button
-import android.widget.Filter
 import android.widget.Toast
 import androidx.annotation.OptIn
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Shapes
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -55,26 +30,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusOrder
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -93,9 +58,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.basiclabproject.R
 import com.example.basiclabproject.feature.auth.signup.VideoPlayer
 import com.example.basiclabproject.ui.stylepresets.TextInputs.textFieldStandard
-import com.example.basiclabproject.ui.stylepresets.buttons.buttonSingInStyle
-import com.example.basiclabproject.ui.theme.Green60
-import org.w3c.dom.Text
+import com.example.basiclabproject.ui.stylepresets.buttons.buttonSecondaryStyle
+import com.example.basiclabproject.ui.stylepresets.buttons.buttonPrimaryStyle
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
@@ -112,11 +76,9 @@ fun SignInScreen(navController: NavController) {
 
     val context = LocalContext.current
 
-    val passwordFocusRequester = FocusRequester()
+    val focusManager = LocalFocusManager.current
 
-    val focusManager: FocusManager = LocalFocusManager.current
-
-    //bg uri
+    //bg uri\
     val uri = RawResourceDataSource.buildRawResourceUri(R.raw.sginbg)
 
 
@@ -196,14 +158,15 @@ fun SignInScreen(navController: NavController) {
 //
 //}
 
-    Box(modifier = Modifier.fillMaxSize()) {
-
-//        Image(
-//            painter = painterResource(id = R.drawable.background),
-//            contentDescription = "Background",
-//            contentScale = ContentScale.FillHeight,
-//            modifier = Modifier.matchParentSize()
-//        )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    focusManager.clearFocus()
+                }
+            }
+    ) {
 
         VideoPlayer(uri)
 
@@ -238,7 +201,6 @@ fun SignInScreen(navController: NavController) {
                 leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = null) },
                 onValueChange = { email = it },
                 label = { Text(text = "Email") },
-                placeholder = { Text(text = "tuemail@gmail.com") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = textFieldStandard(),
                 singleLine = true,
@@ -267,46 +229,77 @@ fun SignInScreen(navController: NavController) {
 
             //SigIn Button
             if (uiState.value == SignInState.Loading) {
-                CircularProgressIndicator(color = Green60)
+                CircularProgressIndicator(color = Color.Green)
             } else {
 
                 Button(
-                    onClick = { viewModel.signIn(email, password) },
+                    onClick = {
+                        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            Toast.makeText(
+                                context,
+                                "Ingrese un correo electrónico válido",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        } else
+                            viewModel.signIn(email, password)
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = buttonSingInStyle(),
+                    colors = buttonPrimaryStyle(),
                     enabled = email.isNotEmpty() && password.isNotEmpty() && uiState.value == SignInState.Nothing || uiState.value == SignInState.Error
                 ) {
+
 
                     Text(text = "Iniciar sesión", Modifier.padding(vertical = 8.dp))
                 }
             }
 
             //ResetPassword Button
-            TextButton(onClick = { }) {
+            TextButton(onClick = {
+                if (email.isEmpty()) {
+                    Toast.makeText(context, "Ingrese un correo electrónico", Toast.LENGTH_SHORT)
+                        .show()
+                    return@TextButton
+                } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    Toast.makeText(
+                        context,
+                        "Ingrese un correo electrónico válido",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@TextButton
+                } else {
+                    viewModel.resetPassword(email)
+                    Toast.makeText(
+                        context,
+                        "Se ha enviado un correo de recuperación",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            }) {
                 Text(
                     text = "¿Olviaste tu contraseña?",
                     color = Color.White,
-                    textDecoration = TextDecoration.Underline
+                    textDecoration = TextDecoration.Underline,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
 
             //Register Button
-            OutlinedButton(
+            Button(
                 onClick = { navController.navigate("signup") },
                 modifier = Modifier.fillMaxWidth(),
-                border = BorderStroke(3.dp, Green60),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color.White,
-                    disabledContainerColor = Color.Transparent,
-                    disabledContentColor = Color.Red
-                )
+                colors = buttonSecondaryStyle()
             ) {
 
                 Text(text = "Registrarse", Modifier.padding(vertical = 8.dp))
             }
 
-            Text(text = "¿No tienes una cuenta?", color = Color.White)
+            Text(
+                text = "¿No tienes una cuenta?",
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium
+            )
 
         }
     }
@@ -321,7 +314,7 @@ fun VideoPlayer(uri: Uri) {
 
     // Crear el ExoPlayer solo una vez
     val exoPlayer = remember(uri) {
-        ExoPlayer.Builder(context).build().apply{
+        ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
             playWhenReady = true
@@ -341,31 +334,9 @@ fun VideoPlayer(uri: Uri) {
         PlayerView(context).apply {
             player = exoPlayer
             useController = false
-            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
         }
     })
-}
-
-
-sealed class InputType(
-    val label: String,
-    val icon: ImageVector,
-    val keyboardOptions: KeyboardOptions,
-    val visualTransformation: VisualTransformation,
-) {
-
-    object Email : InputType(
-        label = "Correo electrónico", icon = Icons.Default.Email, keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next, keyboardType = KeyboardType.Email
-        ), visualTransformation = VisualTransformation.None
-    )
-
-    object Password : InputType(
-        label = "Contraseña", icon = Icons.Default.Lock, keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done, keyboardType = KeyboardType.Password
-        ), visualTransformation = PasswordVisualTransformation()
-    )
-
 }
 
 @Preview(

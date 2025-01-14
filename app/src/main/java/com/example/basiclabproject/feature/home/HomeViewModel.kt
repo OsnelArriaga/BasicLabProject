@@ -1,17 +1,15 @@
 package com.example.basiclabproject.feature.home
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.example.basiclabproject.models.CardInfo
+import com.example.basiclabproject.models.AspectosBasicosModel
 import com.example.basiclabproject.models.CursosVisitadosModel
+import com.example.basiclabproject.models.FundamentosModel
+import com.example.basiclabproject.models.HerramientasModel
 import com.example.basiclabproject.navigation.Screens
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -21,7 +19,6 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,26 +35,70 @@ class HomeViewModel @Inject constructor() : ViewModel() {
 
     private val db = Firebase.firestore
 
-    private val _cardInfo = mutableStateListOf<CardInfo>()
-    val cardInfo: List<CardInfo> get() = _cardInfo
+    private val _aspectosBasicoModels = mutableStateListOf<AspectosBasicosModel>()
+    val aspectosBasicosModel: List<AspectosBasicosModel> get() = _aspectosBasicoModels
+
+    private val _fundamentosModels = mutableStateListOf<FundamentosModel>()
+    val fundamentosModels: List<FundamentosModel> get() = _fundamentosModels
+
+    private val _herrramientasModels = mutableStateListOf<HerramientasModel>()
+    val herrramientasModels: List<HerramientasModel> get() = _herrramientasModels
 
     private val _isLoading = mutableStateOf(true)
     val isLoading: Boolean get() = _isLoading.value
 
     init {
-        getCardInfo()
+        aspectosBasicosConsulta()
+        fundamentosConsulta()
+        herramientasConsulta()
     }
 
-    private fun getCardInfo() {
+    private fun aspectosBasicosConsulta() {
         viewModelScope.launch {
             try {
                 val result = db.collection("aspectosBasicos")
                     .get()
                     .await()
                 val userList = result.map { document ->
-                    document.toObject(CardInfo::class.java).copy(id = document.id)
+                    document.toObject(AspectosBasicosModel::class.java).copy(id = document.id)
                 }
-                _cardInfo.addAll(userList)
+                _aspectosBasicoModels.addAll(userList)
+            } catch (e: Exception) {
+                // Handle the error
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    private fun fundamentosConsulta() {
+        viewModelScope.launch {
+            try {
+                val result = db.collection("fundamentosDeProgramación")
+                    .get()
+                    .await()
+                val fundamentosResult = result.map { document ->
+                    document.toObject(FundamentosModel::class.java).copy(id = document.id)
+                }
+                _fundamentosModels.addAll(fundamentosResult)
+            } catch (e: Exception) {
+                // Handle the error
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    private fun herramientasConsulta() {
+        viewModelScope.launch {
+            try {
+                val result = db.collection("herramientas")
+                    .get()
+                    .await()
+                val herramientasResult = result.map { document ->
+                    document.toObject(HerramientasModel::class.java).copy(id = document.id)
+                }
+                _herrramientasModels.addAll(herramientasResult)
             } catch (e: Exception) {
                 // Handle the error
             } finally {
@@ -99,9 +140,9 @@ class HomeViewModel @Inject constructor() : ViewModel() {
 //
 //    }
 
-    fun guardarCurso(courseID: String, tituloCurso: String) {
+    fun guardarCurso(courseID: String, tituloCurso: String, topicos: List<String>, dificultad: String) {
 
-        val userId = Firebase.auth.currentUser ?.uid ?: return // OBTENER EL USUARIO DEL FBAUTH
+        val userId = Firebase.auth.currentUser?.uid ?: return // OBTENER EL USUARIO DEL FBAUTH
 
         // Referencia a la ubicación donde se guardan los cursos visitados
         val userCoursesRef = dbRealtime.getReference("usuarios")
@@ -122,7 +163,9 @@ class HomeViewModel @Inject constructor() : ViewModel() {
                         userId,
                         courseID,
                         tituloCurso,
-                        System.currentTimeMillis()
+                        System.currentTimeMillis(),
+                        topicos,
+                        dificultad
                     )
                     // Guardar el título en la ruta específica del usuario
                     userCoursesRef
@@ -144,10 +187,10 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     }
 
 
-
     val userId = Firebase.auth.currentUser?.uid!!
 
-    private val _specificField = MutableStateFlow<String?>(null) // Use String? if the field might be null
+    private val _specificField =
+        MutableStateFlow<String?>(null) // Use String? if the field might be null
     val specificField: StateFlow<String?> = _specificField.asStateFlow()
 
     private val _dataFromFirebase = MutableStateFlow<Map<String, Any>>(emptyMap())
