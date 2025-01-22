@@ -140,7 +140,12 @@ class HomeViewModel @Inject constructor() : ViewModel() {
 //
 //    }
 
-    fun guardarCurso(courseID: String, tituloCurso: String, topicos: List<String>, dificultad: String) {
+    fun guardarCurso(
+        courseID: String,
+        tituloCurso: String,
+        topicos: List<String>,
+        dificultad: String
+    ) {
 
         val userId = Firebase.auth.currentUser?.uid ?: return // OBTENER EL USUARIO DEL FBAUTH
 

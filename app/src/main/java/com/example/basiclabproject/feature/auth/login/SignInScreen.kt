@@ -1,7 +1,9 @@
 package com.example.basiclabproject.feature.auth.login
 
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -67,8 +69,13 @@ fun SignInScreen(navController: NavController) {
 
     //viewModel
     val viewModel: SignInViewModel = hiltViewModel()
-
     val uiState = viewModel.state.collectAsState()
+
+    //Bloquear ir hacia atras
+    val shouldBlockBack = remember { true }
+    BackHandler(enabled = shouldBlockBack){
+        Log.w("BackHandler", "Bloqueado")
+    }
 
     var email by remember { mutableStateOf("") }
 
@@ -80,7 +87,6 @@ fun SignInScreen(navController: NavController) {
 
     //bg uri\
     val uri = RawResourceDataSource.buildRawResourceUri(R.raw.sginbg)
-
 
     LaunchedEffect(key1 = uiState.value) {
         when (uiState.value) {
@@ -95,68 +101,6 @@ fun SignInScreen(navController: NavController) {
             else -> {}
         }
     }
-
-
-//    Scaffold(modifier = Modifier.fillMaxSize()) {
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(it)
-//                .padding(16.dp),
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//
-//            Image(
-//                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .size(80.dp)
-//                    .background(Color.Black)
-//            )
-//
-//            OutlinedTextField(
-//                value = email,
-//                onValueChange = {email = it},
-//                label = { Text(text = "Email") },
-//                placeholder = { Text(text = "Enter your email") },
-//                modifier = Modifier.fillMaxWidth())
-//
-//            OutlinedTextField(
-//                value = password,
-//                onValueChange = {password = it},
-//                label = { Text(text = "Password") },
-//                placeholder = { Text(text = "Enter your password") },
-//                modifier = Modifier.fillMaxWidth(),
-//                visualTransformation = PasswordVisualTransformation()
-//            )
-//
-//            Spacer(modifier = Modifier.size(16.dp))
-//
-//            if (uiState.value == SignInState.Loading){
-//                CircularProgressIndicator()
-//            }else{
-//
-//                Button(
-//                    onClick = { },
-//                    modifier = Modifier.fillMaxWidth(),
-//                    //enabled = email.isNotEmpty() && password.isNotEmpty() && uiState.value == SignInState.Nothing || uiState.value == SignInState.Error
-//                ) {
-//
-//                    Text(text = "Sign In")
-//                }
-//            }
-//
-//            Button(onClick = { navController.navigate("signup") },
-//                modifier = Modifier.fillMaxWidth()) {
-//
-//                Text(text = "Sign Up")
-//            }
-//        }
-//
-//    }
-//
-//}
 
     Box(
         modifier = Modifier
@@ -248,8 +192,6 @@ fun SignInScreen(navController: NavController) {
                     colors = buttonPrimaryStyle(),
                     enabled = email.isNotEmpty() && password.isNotEmpty() && uiState.value == SignInState.Nothing || uiState.value == SignInState.Error
                 ) {
-
-
                     Text(text = "Iniciar sesión", Modifier.padding(vertical = 8.dp))
                 }
             }

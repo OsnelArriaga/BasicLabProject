@@ -19,6 +19,7 @@ coil = "2.6.0"
 firebaseFirestoreKtx = "25.1.1"
 runtimeLivedata = "1.7.6"
 uiTextGoogleFonts = "1.7.6"
+animationAndroid = "1.7.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,7 @@ dagger-hilt-compose  = {module = "androidx.hilt:hilt-navigation-compose", versio
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
+androidx-animation-android = { group = "androidx.compose.animation", name = "animation-android", version.ref = "animationAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

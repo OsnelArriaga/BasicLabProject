@@ -2,6 +2,8 @@ package com.example.basiclabproject.feature.home
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +28,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Mood
+import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,11 +47,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,6 +65,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.basiclabproject.R
+import com.example.basiclabproject.feature.home.features.YoutubeVideoHandler
 import com.example.basiclabproject.models.AspectosBasicosModel
 import com.example.basiclabproject.models.FundamentosModel
 import com.example.basiclabproject.models.HerramientasModel
@@ -70,14 +82,18 @@ fun HomeScreen(
 ) {
     //inicializando el viewModel
     val viewModel = hiltViewModel<HomeViewModel>()
-
     val scrollState = rememberScrollState()
+
+    //Bloquear ir hacia atras
+    val shouldBlockBack = remember { true }
+    BackHandler(enabled = shouldBlockBack){
+        Log.w("BackHandler", "Bloqueado")
+    }
 
     Scaffold(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 10.dp),
-
         ) {
 
         Column(
@@ -91,6 +107,8 @@ fun HomeScreen(
             Dashboard(navController, viewModel)
 
             LeccionesVisitadas(viewModel, navController)
+
+            YoutubeHandlerComponente()
 
             AspectosBasicos(navController)
 
@@ -154,16 +172,10 @@ fun Dashboard(
         )
 
         LogoutButton(onLogoutClick = { viewModel.logoutUser(navController) })
-
-        Text(
-            text = "Resumen de tu actividad",
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center
-        )
     }
 }
 
+/// SECCION DE HISTORIAL
 @Composable
 fun LeccionesVisitadas(
     viewModel: HomeViewModel = hiltViewModel(),
@@ -172,6 +184,7 @@ fun LeccionesVisitadas(
 
     val data by viewModel.dataFromFirebase.collectAsState()
 
+    val itemSpacing = 2.dp
     LaunchedEffect(Unit) {
         viewModel.leerDatosDelPadre { data ->
             data.keys.forEach { key ->
@@ -187,22 +200,39 @@ fun LeccionesVisitadas(
         initialPageOffsetFraction = 0f
     )
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(
-            5.dp,
-            alignment = Alignment.CenterVertically
-        )
-    ) {
-        Text(
-            text = "Lecciones recientes",
-            style = MaterialTheme.typography.titleLarge,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(16.dp, 0.dp)
-        )
+    Column{
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(0.dp, 10.dp,20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                text = "Lecciones recientes",
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(16.dp, 0.dp)
+            )
+
+            Icon(
+                imageVector = Icons.Outlined.History,
+                contentDescription = "dificultad:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
+            )
+        }
 
         HorizontalPager(
             state = pager,
+            flingBehavior = PagerDefaults.flingBehavior(
+                state = pager,
+                pagerSnapDistance = PagerSnapDistance.atMost(0)
+            ),
+            contentPadding = PaddingValues(0.dp,0.dp, 20.dp,0.dp),
+            pageSpacing = itemSpacing
         ) { page ->
 
             LeccionesVisitadasItem(
@@ -213,13 +243,14 @@ fun LeccionesVisitadas(
             ) {
 
                 //redireccionar al curso
-                val valueList = data.keys.elementAt(page)
+                val listaLecciones = data.keys.elementAt(page)
 
                 navController.navigate(
-                    Screens.CourseScreen.passId(valueList)
+                    Screens.CourseScreen.passId(listaLecciones)
                 )
             }
         }
+        //Seguimiento de pagina
         Row(
             modifier = Modifier
                 .wrapContentHeight()
@@ -252,9 +283,8 @@ fun LeccionesVisitadasItem(
 ) {
     ElevatedCard(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(15.dp, 15.dp)
-            .size(150.dp, 120.dp)
+            .padding(15.dp, 15.dp, 0.dp, 15.dp)
+            .height(150.dp)
             .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(16.dp))
             .clickable {
                 onClick()
@@ -273,7 +303,7 @@ fun LeccionesVisitadasItem(
                 text = curso,
                 modifier = Modifier
                     .padding(12.dp)
-                    .width(280.dp)
+                    .width(180.dp)
                     .align(Alignment.CenterStart),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontWeight = FontWeight.Medium,
@@ -304,28 +334,68 @@ fun LeccionesVisitadasItem(
         }
 
         Row(
-            modifier = Modifier.padding(12.dp, 0.dp)
+            modifier = Modifier.padding(12.dp, 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Text(
-                text = "Dificultad: ",
-                style = MaterialTheme.typography.titleMedium,
+            Icon(
+                imageVector = Icons.Outlined.Mood,
+                contentDescription = "dificultad:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
             )
 
             Text(
                 text = dificultad,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyLarge,
             )
         }
 
     }
 }
 
-/// SECCION ASPECTOS BASICOS
+/// SECCION DE YOUTUBE
+@Composable
+fun YoutubeHandlerComponente(){
+    Column(
+        modifier = Modifier.fillMaxWidth()
+            .background(colorResource(id = R.color.black)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Row(
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(25.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(R.drawable.yt_ic),
+                contentDescription = "dificultad:",
+                modifier = Modifier.size(150.dp))
 
+            Text(
+                text = "Creadores de contenido destacados",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.width(250.dp)
+            )
+        }
+
+        YoutubeVideoHandler()
+
+        Text("© 2025 Google LLC",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.padding(10.dp))
+    }
+}
+
+/// SECCION ASPECTOS BASICOS
 @Composable
 fun AspectosBasicos(navController: NavController) {
-    Box() {
-
+    Box(
+        modifier = Modifier
+            .padding(0.dp,20.dp,0.dp,10.dp)
+    ) {
         Column(
             modifier = Modifier
                 .padding(10.dp),
@@ -333,19 +403,34 @@ fun AspectosBasicos(navController: NavController) {
                 10.dp,
                 alignment = Alignment.CenterVertically
             )
-        ) {
-            Text(
-                text = "Aspectos Escenciales",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(10.dp, 0.dp)
-            )
+        ){
 
-            Text(
-                text = "Conceptos escenciales para comenzar \n" + "en el mundo de la programación.",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(10.dp, 0.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Column {
+                    Text(
+                        text = "Aspectos Escenciales",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(10.dp, 0.dp)
+                    )
+
+                    Text(
+                        text = "Conceptos escenciales para comenzar \n" + "en el mundo de la programación.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(10.dp, 0.dp)
+                    )
+                }
+
+                Image(
+                    painter = painterResource(R.drawable.idea),
+                    contentDescription = "Aspectos basicos",
+                    modifier = Modifier.size(50.dp).padding(0.dp,0.dp,10.dp)
+                )
+            }
 
             UserListScreen(navController = navController)
         }
@@ -387,13 +472,16 @@ fun UserListScreen(
             ) { page ->
 
                 ChannelItem(cardInfo[page]) {
-                    viewModel.guardarCurso(
-                        cardInfo[page].id,
-                        cardInfo[page].titulo,
-                        cardInfo[page].topicos,
-                        cardInfo[page].dificultad
-                    )
+                        if (cardInfo[page].id.isNotEmpty()) {
+                            viewModel.guardarCurso(
+                                cardInfo[page].id,
+                                cardInfo[page].titulo,
+                                cardInfo[page].topicos,
+                                cardInfo[page].dificultad
+                            )
 
+                            Log.w("FirebaseHistorialRevision", "Clave: ${cardInfo[page].id} - Añadido satisfactoriamente")
+                        }
                     navController.navigate(
                         Screens.CourseScreen.passId(cardInfo[page].id)
                     )
@@ -429,7 +517,7 @@ fun ChannelItem(
     Column(
         modifier = Modifier
             .padding(10.dp, 10.dp)
-            .height(310.dp)
+            .height(350.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .clickable {
@@ -440,7 +528,7 @@ fun ChannelItem(
 
         AsyncImage(
             model = leccion.imagen,
-            contentDescription = "Imagen de prueba",
+            contentDescription = "ImagenLeccion",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .height(150.dp)
@@ -451,30 +539,58 @@ fun ChannelItem(
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             fontWeight = FontWeight.Medium,
-            fontSize = 24.sp
+            style = MaterialTheme.typography.titleLarge
         )
 
-        Text(
-            text = "Dificultad: ${leccion.dificultad}",
-            modifier = Modifier.padding(15.dp, 5.dp),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 18.sp
-        )
+        Row(
+            modifier = Modifier.padding(15.dp, 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ){
+            Icon(
+                imageVector = Icons.Outlined.Mood,
+                contentDescription = "dificultad:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
 
-        Text(
-            text = "Tópicos: ${leccion.topicos.joinToString(", ")}",
-            modifier = Modifier.padding(15.dp, 5.dp),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 18.sp
-        )
+            Text(
+                text = leccion.dificultad,
+                modifier = Modifier.padding(15.dp, 5.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
 
+        Row(
+            modifier = Modifier.padding(15.dp, 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ){
+            Icon(
+                imageVector = Icons.Outlined.Category,
+                contentDescription = "topicos:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Text(
+                text = leccion.topicos.joinToString(", "),
+                modifier = Modifier.padding(15.dp, 5.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
 
 /// SECCION DE FUNDAMENTOS
 @Composable
 fun FundamentosSeccion(navController: NavController) {
-    Box() {
+    Box(
+        modifier = Modifier
+            .padding(0.dp,20.dp,0.dp,10.dp)
+    ) {
         Column(
             modifier = Modifier
                 .padding(10.dp),
@@ -482,23 +598,37 @@ fun FundamentosSeccion(navController: NavController) {
                 10.dp,
                 alignment = Alignment.CenterVertically
             )
-        ) {
-            Text(
-                text = "Aspectos Escenciales",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(10.dp, 0.dp)
-            )
+        ){
 
-            Text(
-                text = "Conceptos escenciales para comenzar \n" + "en el mundo de la programación.",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(10.dp, 0.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Image(
+                    painter = painterResource(R.drawable.insights),
+                    contentDescription = "Aspectos basicos",
+                    modifier = Modifier.size(60.dp).padding(10.dp,0.dp,0.dp)
+                )
+
+                Column {
+                    Text(
+                        text = "Fundamentos de software",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(10.dp, 0.dp)
+                    )
+
+                    Text(
+                        text = "Tecnicas escenciales para comenzar \n" + "a desarrollar software",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(10.dp, 0.dp)
+                    )
+                }
+            }
 
             FundamentosContent(navController = navController)
         }
-
     }
 }
 
@@ -578,7 +708,7 @@ fun FundamentosContentItem(
     Column(
         modifier = Modifier
             .padding(10.dp, 10.dp)
-            .height(310.dp)
+            .height(350.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .clickable {
@@ -589,7 +719,7 @@ fun FundamentosContentItem(
 
         AsyncImage(
             model = leccion.imagen,
-            contentDescription = "Imagen de prueba",
+            contentDescription = "ImagenLeccion",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .height(150.dp)
@@ -600,32 +730,59 @@ fun FundamentosContentItem(
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             fontWeight = FontWeight.Medium,
-            fontSize = 24.sp
+            style = MaterialTheme.typography.titleLarge
         )
 
-        Text(
-            text = "Dificultad: ${leccion.dificultad}",
-            modifier = Modifier.padding(15.dp, 5.dp),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 18.sp
-        )
+        Row(
+            modifier = Modifier.padding(15.dp, 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ){
+            Icon(
+                imageVector = Icons.Outlined.Mood,
+                contentDescription = "dificultad:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
 
-        Text(
-            text = "Tópicos: ${leccion.topicos.joinToString(", ")}",
-            modifier = Modifier.padding(15.dp, 5.dp),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 18.sp
-        )
+            Text(
+                text = leccion.dificultad,
+                modifier = Modifier.padding(15.dp, 5.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
 
+        Row(
+            modifier = Modifier.padding(15.dp, 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ){
+            Icon(
+                imageVector = Icons.Outlined.Category,
+                contentDescription = "topicos:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Text(
+                text = leccion.topicos.joinToString(", "),
+                modifier = Modifier.padding(15.dp, 5.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
 
-/// HERRAMIENTAS
-
+/// SECCION DE HERRAMIENTAS
 @Composable
 fun HerramientasSeccion(navController: NavController) {
-    Box() {
 
+    Box(
+        modifier = Modifier
+            .padding(0.dp,20.dp,0.dp,10.dp)
+    ) {
         Column(
             modifier = Modifier
                 .padding(10.dp),
@@ -633,23 +790,36 @@ fun HerramientasSeccion(navController: NavController) {
                 10.dp,
                 alignment = Alignment.CenterVertically
             )
-        ) {
-            Text(
-                text = "Aspectos Escenciales",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(10.dp, 0.dp)
-            )
+        ){
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Column {
+                    Text(
+                        text = "Herramientas Dev",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(10.dp, 0.dp)
+                    )
 
-            Text(
-                text = "Conceptos escenciales para comenzar \n" + "en el mundo de la programación.",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(10.dp, 0.dp)
-            )
+                    Text(
+                        text = "Programas útiles que necesitas conocer\n" + "en tu camino como desarrollador.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(10.dp, 0.dp)
+                    )
+                }
+
+                Image(
+                    painter = painterResource(R.drawable.vscode),
+                    contentDescription = "Aspectos basicos",
+                    modifier = Modifier.size(60.dp).padding(0.dp,0.dp,10.dp)
+                )
+            }
 
             HerramientasContent(navController = navController)
         }
-
     }
 }
 
@@ -729,7 +899,7 @@ fun HerramientasContentItem(
     Column(
         modifier = Modifier
             .padding(10.dp, 10.dp)
-            .height(310.dp)
+            .height(350.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .clickable {
@@ -740,7 +910,7 @@ fun HerramientasContentItem(
 
         AsyncImage(
             model = leccion.imagen,
-            contentDescription = "Imagen de prueba",
+            contentDescription = "ImagenLeccion",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .height(150.dp)
@@ -751,29 +921,52 @@ fun HerramientasContentItem(
             modifier = Modifier.padding(16.dp),
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             fontWeight = FontWeight.Medium,
-            fontSize = 24.sp
+            style = MaterialTheme.typography.titleLarge
         )
 
-        Text(
-            text = "Dificultad: ${leccion.dificultad}",
-            modifier = Modifier.padding(15.dp, 5.dp),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 18.sp
-        )
+        Row(
+            modifier = Modifier.padding(15.dp, 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ){
+            Icon(
+                imageVector = Icons.Outlined.Mood,
+                contentDescription = "dificultad:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
 
-        Text(
-            text = "Tópicos: ${leccion.topicos.joinToString(", ")}",
-            modifier = Modifier.padding(15.dp, 5.dp),
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 18.sp
-        )
+            Text(
+                text = leccion.dificultad,
+                modifier = Modifier.padding(15.dp, 5.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
 
+        Row(
+            modifier = Modifier.padding(15.dp, 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ){
+            Icon(
+                imageVector = Icons.Outlined.Category,
+                contentDescription = "topicos:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Text(
+                text = leccion.topicos.joinToString(", "),
+                modifier = Modifier.padding(15.dp, 5.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
 
-
-
-
+///BOTON CERRAR SESION
 @Composable
 fun LogoutButton(onLogoutClick: () -> Unit) {
 

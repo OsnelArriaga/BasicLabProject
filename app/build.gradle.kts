@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.androidx.animation.android)
 
     testImplementation(libs.junit)
 
@@ -114,6 +115,9 @@ dependencies {
 
     //Imagenes de la web
     implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+
+    //Extension de Iconos Material
+    implementation("androidx.compose.material:material-icons-extended:1.7.6")
 
 
 }
