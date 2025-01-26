@@ -41,8 +41,6 @@ class SignInViewModel @Inject constructor() : ViewModel(){
 
 }
 
-
-
 sealed class SignInState{
 
     //Lista de (to do) para cada estado del inicio de sesion

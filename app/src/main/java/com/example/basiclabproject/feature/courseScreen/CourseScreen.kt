@@ -1,65 +1,70 @@
 package com.example.basiclabproject.feature.courseScreen
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerDefaults
-import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Mood
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.BookOnline
 import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.basiclabproject.feature.courseScreen.features.YoutubeLeccionHandler
 import com.example.basiclabproject.models.AspectosBasicosModel
-import com.example.basiclabproject.ui.stylepresets.buttons.buttonSecondaryStyle
 
 @Composable
 fun CourseScreen(
@@ -88,6 +93,7 @@ fun CourseScreen(
                     leccion1 = cContent?.lecciones?.leccion1 ?: "",
                     leccion2 = cContent?.lecciones?.leccion2 ?: ""
                 ),
+                video = cContent?.video ?: ""
             ),
         )
     }
@@ -99,7 +105,6 @@ fun CourseItem(
     navController: NavController,
     course: AspectosBasicosModel
 ) {
-
     val scrollState = rememberScrollState()
 
     Column(
@@ -123,7 +128,7 @@ fun CourseItem(
                 model = course.imagen,
                 contentDescription = "Imagen de prueba",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
@@ -249,26 +254,40 @@ fun CourseItem(
 @Composable
 fun SeccionContenido(
     course: AspectosBasicosModel
-){
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-    ){
+            .height(1200.dp)
+            .background(MaterialTheme.colorScheme.surface),
+        verticalArrangement = Arrangement.spacedBy(30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-        Row(
+        Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ){
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+                contentDescription = "dificultad:",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(64.dp)
+            )
+
             Text(
-                text = "Contenido",
+                text = "Contenido de la lección",
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(16.dp)
             )
         }
+
+        YoutubeLeccionHandler(course.video)
 
         ContenidoLeccion(course)
     }
@@ -281,7 +300,7 @@ fun ContenidoLeccion(
     val cardInfoLengt = listOf(
         cardInfo.lecciones?.leccion1 ?: "",
         cardInfo.lecciones?.leccion2 ?: "",
-        cardInfo.lecciones?.ejemplos ?: ""
+        cardInfo.lecciones?.ejemplos ?: "",
     )
 
     val pager = rememberPagerState(
@@ -292,14 +311,30 @@ fun ContenidoLeccion(
 
     HorizontalPager(
         state = pager,
-        modifier = Modifier.padding(10.dp, 0.dp)
+        modifier = Modifier
+            .padding(10.dp, 0.dp)
+            .height(500.dp) // Altura del pager
     ) { page ->
 
-        Text(
-            text = cardInfoLengt[page],
-        )
+        val scrollState = rememberScrollState()
+
+        Column {
+            // Contenido desplazable
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+            ) {
+                Text(
+                    cardInfoLengt[page],
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+        }
+
     }
 
+    // Indicadores de página
     Row(
         modifier = Modifier
             .wrapContentHeight()
@@ -309,7 +344,7 @@ fun ContenidoLeccion(
     ) {
         repeat(pager.pageCount) { iteration ->
             val color =
-                if (pager.currentPage == iteration) Color.Red else Color.White
+                if (pager.currentPage == iteration) MaterialTheme.colorScheme.primary else Color.White
             Box(
                 modifier = Modifier
                     .padding(2.dp)
@@ -317,6 +352,40 @@ fun ContenidoLeccion(
                     .background(color)
                     .size(8.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun ScrollableContentWithProgressBar() {
+    // Estado de desplazamiento
+    val scrollState = rememberScrollState()
+
+    // Contenido largo para demostrar el desplazamiento
+    val itemCount = 50
+    val totalHeight = itemCount * 50 // Altura estimada de cada elemento (ajusta según tu contenido)
+
+    // Calcular el progreso de desplazamiento
+    val progress = scrollState.value / (totalHeight - 300f) // Ajusta 300f según la altura visible
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Barra de progreso
+        LinearProgressIndicator(
+            progress = progress.coerceIn(0f, 1f), // Asegúrate de que el progreso esté entre 0 y 1
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Contenido desplazable
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState) // Habilitar el desplazamiento vertical
+        ) {
+            // Generar contenido largo para demostrar el desplazamiento
+            repeat(itemCount) { index ->
+                Text("Elemento ${index + 1}", modifier = Modifier.padding(8.dp))
+            }
         }
     }
 }

@@ -1,8 +1,14 @@
 package com.example.basiclabproject.feature.home
 
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -20,7 +26,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +41,11 @@ import java.util.UUID
 @HiltViewModel
 class HomeViewModel @Inject constructor() : ViewModel() {
 
+    //BASE DE DATOS ESTANDAR
     private val db = Firebase.firestore
+
+    //BASE DE DATOS EN TIEMPO REAL
+    private val dbRealtime = Firebase.database
 
     private val _aspectosBasicoModels = mutableStateListOf<AspectosBasicosModel>()
     val aspectosBasicosModel: List<AspectosBasicosModel> get() = _aspectosBasicoModels
@@ -53,7 +65,65 @@ class HomeViewModel @Inject constructor() : ViewModel() {
         herramientasConsulta()
     }
 
-    private fun aspectosBasicosConsulta() {
+    //CONSULTA PARA ACTUALIZAR DATOS AL REFRESCAR
+    fun loadData() {
+        viewModelScope.launch {
+            if(_aspectosBasicoModels != null && _fundamentosModels != null && _herrramientasModels != null)run {
+                _aspectosBasicoModels.clear()
+                _herrramientasModels.clear()
+                _fundamentosModels.clear()
+            }
+
+            aspectosBasicosConsulta()
+            fundamentosConsulta()
+            herramientasConsulta()
+        }
+    }
+
+
+    private val _courseContent = MutableLiveData<AspectosBasicosModel?>()
+    val cContent: LiveData<AspectosBasicosModel?> get() = _courseContent
+
+    fun busqueda(documentId: String) {
+        val collections = listOf("aspectosBasicos", "fundamentosDeProgramación", "herramientas")
+        fetchFromCollections(collections, documentId, 0)
+    }
+
+    private fun fetchFromCollections(collections: List<String>, documentId: String, index: Int) {
+        if (index >= collections.size) {
+            // Si hemos revisado todas las colecciones y no encontramos el documento
+            _courseContent.value = null
+            Log.e("buscador", "El documento no se encontró en ninguna colección.")
+            return
+        }
+
+        val collection = collections[index]
+        db.collection(collection)
+            .document(documentId)
+            .get()
+            .addOnSuccessListener { document ->
+                // Si el documento no existe, intentamos con la siguiente colección
+                if (document != null) {
+                    // Mapeo del documento de acuerdo al modelo
+                    val usuarioData = document?.toObject<AspectosBasicosModel>()
+                    _courseContent.value = usuarioData
+                    Log.d("buscador:", _courseContent.value.toString())
+
+                    if (_courseContent.value == null){
+                        Log.e("fetchData", "El documento no existe en la colección: $collection")
+                        fetchFromCollections(collections, documentId, index + 1)
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Manejar errores
+                Log.e("buscador", "Error al obtener el documento: ${exception.message}")
+                // Intentamos con la siguiente colección incluso si hay un error
+                fetchFromCollections(collections, documentId, index + 1)
+            }
+    }
+
+    fun aspectosBasicosConsulta() {
         viewModelScope.launch {
             try {
                 val result = db.collection("aspectosBasicos")
@@ -71,7 +141,7 @@ class HomeViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun fundamentosConsulta() {
+    fun fundamentosConsulta() {
         viewModelScope.launch {
             try {
                 val result = db.collection("fundamentosDeProgramación")
@@ -89,7 +159,7 @@ class HomeViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun herramientasConsulta() {
+    fun herramientasConsulta() {
         viewModelScope.launch {
             try {
                 val result = db.collection("herramientas")
@@ -112,33 +182,6 @@ class HomeViewModel @Inject constructor() : ViewModel() {
         // Limpiar datos de sesión locales
         navController.navigate(Screens.LoginScreen.route)
     }
-
-    //Guardar curso Realtime Database
-    private val dbRealtime = Firebase.database
-
-//    fun saveMessage(courseID: String, tituloCurso: String){
-//
-//        val userId = Firebase.auth.currentUser ?.uid ?: return // Asegúrate de que el usuario esté autenticado
-//
-//
-//        val message = CursosVisitadosModel(
-//            dbRealtime.reference.push().key?: UUID.randomUUID().toString(),
-//            userId,
-//            courseID,
-//            tituloCurso,
-//            System.currentTimeMillis(),
-//        )
-//
-//        val key = dbRealtime.getReference("usuarios")
-//            .child(userId)
-//            .child("cursosVisitados")
-//            .child(courseID)
-//            .push()
-//            .setValue(message)
-//
-//        Log.w("Firebase", "Key: $key")
-//
-//    }
 
     fun guardarCurso(
         courseID: String,
@@ -194,10 +237,6 @@ class HomeViewModel @Inject constructor() : ViewModel() {
 
     val userId = Firebase.auth.currentUser?.uid!!
 
-    private val _specificField =
-        MutableStateFlow<String?>(null) // Use String? if the field might be null
-    val specificField: StateFlow<String?> = _specificField.asStateFlow()
-
     private val _dataFromFirebase = MutableStateFlow<Map<String, Any>>(emptyMap())
     val dataFromFirebase: StateFlow<Map<String, Any>> = _dataFromFirebase.asStateFlow()
 
@@ -244,64 +283,4 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             }
         }
     }
-
-
-//    fun guardarCursoVisitado(cursoId: String) {
-//
-//        val db = FirebaseFirestore.getInstance()
-//        val usuarioId = Firebase.auth.currentUser?.uid // Cambia esto por el ID del usuario actual
-//
-//        if (usuarioId != null) {
-//            db.collection("usuarios").document(usuarioId)
-//                .collection("cursosVisitados").document(cursoId)
-//                .set(mapOf("id" to cursoId))
-//                .addOnSuccessListener {
-//                    // Curso guardado exitosamente
-//                    Log.d("Firestore", "Curso guardado exitosamente: $cursoId")
-//                    // Aquí puedes actualizar la UI o mostrar un mensaje al usuario
-//                    //Toast.makeText(, "Curso guardado exitosamente", Toast.LENGTH_SHORT).show()
-//                }
-//                .addOnFailureListener { e ->
-//                    // Manejar el error
-//                    Log.w("Firestore", "Error al guardar el curso", e)
-//                }
-//        }
-//    }
-
-//    fun obtenerCursosVisitados(onResult: (List<CardInfo>) -> Unit) {
-//        val db = FirebaseFirestore.getInstance()
-//        val usuarioId = Firebase.auth.currentUser?.uid //
-//
-//        if (usuarioId != null) {
-//            db.collection("usuarios").document(usuarioId)
-//                .collection("cursosVisitados")
-//                .get()
-//                .addOnSuccessListener { documents ->
-//                    val cursos = documents.map { doc ->
-//                        CardInfo(doc.id, doc.getString("titulo") ?: "Sin título")
-//                    }
-//    //                onResult(CardInfo)
-//                }
-//                .addOnFailureListener { e ->
-//                    // Manejar el error
-//                    onResult(emptyList())
-//                }
-//        }
-//    }
-
-
 }
-
-
-//    private fun getData(){
-//        viewModelScope.launch {
-//            state.value = getDataFromFirestore()
-//        }
-//    }
-
-//    crear una lista para el contenido de los canales
-//    private val _channels = MutableStateFlow<List<Channel>>(emptyList())
-//    private val _AspectosEscencialesModel = MutableStateFlow<List<AspectosEscencialesModel>>(emptyList())
-//
-//    val channels = _channels.asStateFlow()
-//    val aeModel = _AspectosEscencialesModel.asStateFlow()

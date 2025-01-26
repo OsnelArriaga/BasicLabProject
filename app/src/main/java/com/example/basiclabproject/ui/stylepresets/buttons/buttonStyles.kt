@@ -19,7 +19,7 @@ fun buttonPrimaryStyle(): ButtonColors {
 @Composable
 fun buttonSecondaryStyle(): ButtonColors {
     return ButtonDefaults.buttonColors(
-        containerColor = MaterialTheme.colorScheme.onPrimary,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.primary,
         disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         disabledContentColor = MaterialTheme.colorScheme.outline

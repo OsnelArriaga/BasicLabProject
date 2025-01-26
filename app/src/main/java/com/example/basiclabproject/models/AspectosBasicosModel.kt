@@ -7,7 +7,8 @@ data class AspectosBasicosModel(
     val descripcion: String = "",
     val topicos: List<String> = emptyList(),
     val lecciones: LeccionesBasicas? = null,
-    val imagen: String = ""
+    val imagen: String = "",
+    val video: String = ""
 )
 
 data class LeccionesBasicas(

@@ -73,7 +73,7 @@ fun SignInScreen(navController: NavController) {
 
     //Bloquear ir hacia atras
     val shouldBlockBack = remember { true }
-    BackHandler(enabled = shouldBlockBack){
+    BackHandler(enabled = shouldBlockBack) {
         Log.w("BackHandler", "Bloqueado")
     }
 
@@ -112,6 +112,7 @@ fun SignInScreen(navController: NavController) {
             }
     ) {
 
+        //LLAMADO AL COMPONENTE DE VIDEO
         VideoPlayer(uri)
 
         Column(

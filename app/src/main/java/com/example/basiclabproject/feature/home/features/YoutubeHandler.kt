@@ -76,7 +76,8 @@ fun YoutubeVideoHandler() {
 
         Text(
             text = "@rafaelmontenegrob",
-        )
+            color = Color.White,
+            )
 
         val context = LocalContext.current
 
