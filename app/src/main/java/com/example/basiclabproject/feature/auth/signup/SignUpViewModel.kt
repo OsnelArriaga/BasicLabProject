@@ -38,11 +38,9 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
 }
 
 sealed class SignUpState {
-
     //Lista de (to do) para cada estado del inicio de sesion
     object Nothing : SignUpState()
     object Loading : SignUpState()
     object Success : SignUpState()
     object Error : SignUpState()
-
 }

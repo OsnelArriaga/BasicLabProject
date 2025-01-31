@@ -35,7 +35,6 @@ data class LeccionesFundamentos(
 
 )
 
-
 data class HerramientasModel(
     val id: String = "",
     val titulo: String = "",

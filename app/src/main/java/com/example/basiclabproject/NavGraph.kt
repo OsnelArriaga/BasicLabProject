@@ -6,6 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.basiclabproject.feature.auth.TerminosYCondiciones
 import com.example.basiclabproject.feature.auth.login.SignInScreen
 import com.example.basiclabproject.feature.auth.signup.SignUpScreen
 import com.example.basiclabproject.feature.courseScreen.CourseScreen
@@ -58,9 +59,12 @@ fun SetupNavGraph(
             CourseScreen(navController, cursoId)
         }
 
+        composable(
+            route = Screens.TerminosYCondiciones.route
+        ){
+            TerminosYCondiciones(navController)
+        }
+
     }
-
-
-
 
 }

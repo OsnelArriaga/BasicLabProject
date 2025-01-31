@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,12 +36,14 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.ContentPasteSearch
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.CloudOff
@@ -47,6 +52,7 @@ import androidx.compose.material.icons.outlined.Mood
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.PersonOff
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -125,6 +131,14 @@ fun HomeScreen(
     //Estado de la actividad
     val context = LocalContext.current
 
+    var visible by remember { mutableStateOf(false) }
+    
+    // Cambia la visibilidad después de un retraso
+    LaunchedEffect(Unit) {
+        // Espera 1 segundo antes de mostrar los componentes
+        visible = true
+    }
+
     //Bloquear ir hacia atras
     val shouldBlockBack = remember { true }
     BackHandler(enabled = shouldBlockBack) {
@@ -145,17 +159,29 @@ fun HomeScreen(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
         ) {
-            Dashboard(navController, viewModel)
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn(animationSpec = tween(durationMillis = 500))
 
-            LeccionesVisitadas(viewModel, navController)
+            ) {
+                Column {
+                    Dashboard(navController, viewModel)
 
-            YoutubeHandlerComponente()
+                    LeccionesVisitadas(viewModel, navController)
 
-            AspectosBasicosSeccion(navController)
+                    YoutubeHandlerComponente()
 
-            FundamentosSeccion(navController)
+                    PresentacionContenidos()
 
-            HerramientasSeccion(navController)
+                    AspectosBasicosSeccion(navController)
+
+                    FundamentosSeccion(navController)
+
+                    HerramientasSeccion(navController)
+
+                    AppInfo()
+                }
+            }
         }
     }
 }
@@ -279,18 +305,6 @@ fun EstatusConexionComponente() {
     }
 }
 
-///BUSQUEDA
-@Composable
-fun FilterChipGroup(
-    viewmodels: HomeViewModel = hiltViewModel(),
-    items: List<String>,
-    selectedFilters: List<String>,
-    onFilterSelected: (String) -> Unit
-) {
-
-
-}
-
 /// SECCION DE HISTORIAL
 @Composable
 fun LeccionesVisitadas(
@@ -299,7 +313,7 @@ fun LeccionesVisitadas(
 ) {
     val data by viewModel.dataFromFirebase.collectAsState()
 
-    val itemSpacing = 2.dp
+    val itemSpacing = 20.dp
     LaunchedEffect(Unit) {
         viewModel.leerDatosDelPadre { data ->
             data.keys.forEach { key ->
@@ -324,11 +338,10 @@ fun LeccionesVisitadas(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Lecciones recientes",
+                text = "Tus lecciones recientes",
                 style = MaterialTheme.typography.titleLarge,
-                fontSize = 24.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(16.dp, 0.dp)
+                modifier = Modifier.padding(10.dp, 0.dp)
             )
 
             Icon(
@@ -346,7 +359,7 @@ fun LeccionesVisitadas(
                     state = pager,
                     pagerSnapDistance = PagerSnapDistance.atMost(0)
                 ),
-                contentPadding = PaddingValues(0.dp, 0.dp, 20.dp, 0.dp),
+                contentPadding = PaddingValues(0.dp, 0.dp, 100.dp, 0.dp),
                 pageSpacing = itemSpacing
             ) { page ->
                 LeccionesVisitadasItem(
@@ -423,7 +436,7 @@ fun LeccionesVisitadasItem(
 ) {
     ElevatedCard(
         modifier = Modifier
-            .padding(15.dp, 15.dp, 0.dp, 15.dp)
+            .padding(10.dp, 10.dp)
             .height(120.dp)
             .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(16.dp))
             .clickable {
@@ -534,13 +547,38 @@ fun YoutubeHandlerComponente() {
     }
 }
 
+///PRESENTACION A CONTENIDOS
+@Composable
+fun PresentacionContenidos() {
+
+    Column(
+        modifier = Modifier
+            .padding(32.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.AutoStories,
+            contentDescription = "Loog seccion:",
+            tint = MaterialTheme.colorScheme.inverseSurface,
+            modifier = Modifier.size(60.dp)
+        )
+
+        Text(
+            text = "Comienza a descubrir",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.inverseSurface,
+            modifier = Modifier.padding(16.dp, 10.dp, 16.dp, 0.dp).align(Alignment.CenterHorizontally)
+        )
+    }
+}
+
 /// SECCION ASPECTOS BASICOS
 @Composable
 fun AspectosBasicosSeccion(navController: NavController) {
-    Box(
-        modifier = Modifier
-            .padding(0.dp, 20.dp, 0.dp, 10.dp)
-    ) {
+    Box() {
         Column(
             modifier = Modifier
                 .padding(10.dp),
@@ -1164,4 +1202,30 @@ fun AlertaCerrarSesion(
             }
         )
     }
+}
+
+@Composable
+fun AppInfo(){
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ){
+
+        Text(
+            "BasicLab - ",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onPrimary,
+        )
+
+        Text(
+            "Ver. 1.0",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.padding(10.dp)
+        )
+    }
+
 }

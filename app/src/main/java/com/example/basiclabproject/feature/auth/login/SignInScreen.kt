@@ -187,7 +187,7 @@ fun SignInScreen(navController: NavController) {
                             ).show()
                             return@Button
                         } else
-                            viewModel.signIn(email, password)
+                            viewModel.signIn(email, password, context)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = buttonPrimaryStyle(),

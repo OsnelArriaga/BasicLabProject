@@ -73,13 +73,11 @@ class HomeViewModel @Inject constructor() : ViewModel() {
                 _herrramientasModels.clear()
                 _fundamentosModels.clear()
             }
-
             aspectosBasicosConsulta()
             fundamentosConsulta()
             herramientasConsulta()
         }
     }
-
 
     private val _courseContent = MutableLiveData<AspectosBasicosModel?>()
     val cContent: LiveData<AspectosBasicosModel?> get() = _courseContent

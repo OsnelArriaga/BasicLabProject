@@ -1,6 +1,7 @@
 package com.example.basiclabproject.feature.auth.login
 
 import android.text.TextUtils
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -16,7 +17,7 @@ class SignInViewModel @Inject constructor() : ViewModel(){
     private val _state = MutableStateFlow<SignInState>(SignInState.Nothing)
     val state = _state.asStateFlow()
 
-    fun signIn(email: String, password: String) {
+    fun signIn(email: String, password: String, context: android.content.Context) {
         _state.value = SignInState.Loading
         //Firebase login process
         FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
@@ -27,8 +28,10 @@ class SignInViewModel @Inject constructor() : ViewModel(){
                         return@addOnCompleteListener
                     }
                     _state.value = SignInState.Error
+                    Toast.makeText(context, "Datos de inicio de sesión incorrectos", Toast.LENGTH_SHORT).show()
                 } else {
                     _state.value = SignInState.Error
+                    Toast.makeText(context, "Datos de inicio de sesión incorrectos", Toast.LENGTH_SHORT).show()
                 }
             }
     }

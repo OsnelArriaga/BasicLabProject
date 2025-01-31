@@ -13,6 +13,7 @@ sealed class Screens(val route: String) {
             return this.route.replace(oldValue = "{$DETAIL_ARGUMENT_KEY}", newValue = id)
         }
     }
+    object TerminosYCondiciones: Screens("terminosYCondiciones")
 
 
 }

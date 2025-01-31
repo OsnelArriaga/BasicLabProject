@@ -12,16 +12,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +36,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -52,6 +58,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -244,11 +251,29 @@ fun SignUpScreen(navController: NavController) {
                         onCheckedChange = { checked = it }
                     )
 
-                    Text(
-                        text = "Al marcar esta casilla, estaras aceptando los los términos y condiciones.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
-                    )
+                    Column(
+                        modifier = Modifier.padding(top = 15.dp),
+                        verticalArrangement = Arrangement.Center
+                    ){
+                        Text(
+                            text = "Al marcar esta casilla, estarás aceptando los",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+
+                        TextButton(
+                            modifier = Modifier.height(30.dp),
+                            onClick = { navController.navigate("terminosYCondiciones") }
+                        ) {
+                            Text(
+                                text = "Términos y Condiciones",
+                                textDecoration = TextDecoration.Underline,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+
+                        }
+                    }
                 }
             }
 
@@ -374,12 +399,4 @@ fun BackButton(onBackTouch: () -> Unit) {
             modifier = Modifier.size(24.dp)
         )
     }
-}
-
-@Preview(
-    showSystemUi = true, showBackground = true
-)
-@Composable
-fun SignInScreenPreview() {
-    SignUpScreen(navController = rememberNavController())
 }

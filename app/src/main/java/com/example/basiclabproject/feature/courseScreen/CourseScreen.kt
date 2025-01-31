@@ -34,6 +34,7 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -245,6 +246,11 @@ fun CourseItem(
                 style = MaterialTheme.typography.bodyLarge
             )
 
+            Divider(
+                color = MaterialTheme.colorScheme.onSurface,
+                thickness = 2.dp,
+                modifier = Modifier.padding(10.dp)
+            )
 
             SeccionContenido(course)
         }
@@ -276,14 +282,14 @@ fun SeccionContenido(
                 imageVector = Icons.AutoMirrored.Outlined.MenuBook,
                 contentDescription = "dificultad:",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(64.dp)
+                modifier = Modifier.size(42.dp)
             )
 
             Text(
                 text = "Contenido de la lección",
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally)
             )
         }
 
@@ -326,7 +332,7 @@ fun ContenidoLeccion(
                     .verticalScroll(scrollState)
             ) {
                 Text(
-                    cardInfoLengt[page],
+                    "    " + cardInfoLengt[page],
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
