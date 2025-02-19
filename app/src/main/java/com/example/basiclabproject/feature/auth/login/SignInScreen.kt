@@ -135,7 +135,7 @@ fun SignInScreen(navController: NavController) {
             )
 
             Text(
-                text = "CodeLab",
+                text = "BasicLab",
                 fontSize = 35.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
